@@ -59,46 +59,7 @@ print(slice_area)
 print(sum_a_list(slice_area)/len(slice_area))
 
 
-# 4) Who has the biggest pizza slice in slices_big? Who has the smallest?
-# What's the average slice size?
 
-def mean_of_list(x: List[Union[int, float]]) -> Union[int, float]:
-    """
-    Finds the mean of a list of numeric items
-    
-    :param x:
-        a list of ints or floats
-    :return:
-        the mean of the input list (int, float)
-    """
-    # fill in the calculation for mean here!
-    pass
-
-
-def min_of_list(x: List[Union[int, float]]) -> Union[int, float]:
-    """
-    Finds the minimum value of a list of numeric items and returns it.
-    
-    :param x:
-        a list of ints or floats
-    :return:
-        the minimum of the input list
-    """
-    # fill in the method for getting the minimum here!
-    pass
-
-
-def max_of_list(x: List[Union[int, float]]) -> Union[int, float]:
-    """
-    Finds the maximum value of a list of numeric items and returns it.
-
-    :param x:
-        a list of ints or floats
-    :return:
-        the maximum of the input list
-    """
-    # fill in the method for getting the maximum here!
-    pass
 
 
 
