@@ -3,7 +3,7 @@ adapted from https://dr0id.bitbucket.io/legacy/pygame_tutorial00.html
 """
 # this gets the pygame module, we can import other packages also!
 import pygame
-import pygame_constants
+from pygame_constants import *
 
 
 # our main function--this runs whenever someone runs the script!
