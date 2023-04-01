@@ -14,7 +14,7 @@ def get_jpgs(soup: bs) -> list:
     """
     Given a webpage as beautifulsoup, extracts the jpg links and stores them in a list
     """
-    # TODO: grab all jpgs from the soup.
+    # TODO: grab all jpgs from the soup. We can start by getting all images and then filtering only jpgs!
     pass
 
 
@@ -23,6 +23,7 @@ def save_jpgs(jpg_list: list):
     Saves the jpgs to file
     """
 
+    # use a for-loop to go through each of the items
     for jpg in jpg_list:
         # TODO: 
         # 1) extract the link from each item in the list  
