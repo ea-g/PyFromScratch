@@ -1,4 +1,4 @@
-from funcs import *
+from skeleton.lesson_22.funcs import *
 
 
 def test_sum():

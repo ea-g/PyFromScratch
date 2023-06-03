@@ -14,15 +14,17 @@ def largest(arr: list[str | int | float]) -> str | int | float:
     :param arr: a list containing any mix of strings, ints, or floats
     :return: the largest item in the list
     """
-    # TODO: Implement the function.
     out = arr[0]
+    curr = len(out) if type(out) is str else out
     for i in arr:
         if type(i) is str:
-            if out < len(i):
+            if curr < len(i):
                 out = i
+                curr = len(i)
         else:
-            if out < i:
+            if curr < i:
                 out = i
+                curr = i
     return out
 
 
@@ -36,6 +38,8 @@ def prob(arr: list[str | int | float], query: str | int | float) -> float:
     """
     # TODO: implement the function. Hint--remember for a discrete set, relative frequency will give us probability
     overall = len(arr)
+    if overall == 0:
+        return 0
     freq = 0
     for i in arr:
         if i == query:
@@ -59,15 +63,23 @@ def get_text(url: str) -> list[str]:
 
     # gets the page content as a BeautifulSoup object
     page = BeautifulSoup(requests.get(url).content, "html.parser")
-
-    all_text = None
-    pass
+    par = page.find_all("p")
+    all_text = ""
+    for i in par:
+        all_text += i.get_text(separator=" ", strip=True)
+    all_text = normalize(all_text)
+    return all_text.split()
 
 
 def normalize(text: str) -> str:
     return re.sub(r'[^\w\s]', ' ', text.lower())
 
 
-
-
+if __name__ == "__main__":
+    t = "https://en.wikipedia.org/wiki/Pikachu"
+    l = get_text(t)
+    p = prob(l, "pikachu")
+    r = prob(l, "the")
+    print("pikachu:", p)
+    print("the:", r)
 

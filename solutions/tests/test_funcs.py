@@ -1,4 +1,4 @@
-from funcs import *
+from solutions.lesson_22.funcs import *
 
 
 def test_sum():
