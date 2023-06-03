@@ -1,4 +1,4 @@
-from skeleton.lesson_23_review.review_funcs import *
+from solutions.lesson_23_review.review_funcs import *
 from collections import Counter
 import matplotlib.pyplot as plt
 
