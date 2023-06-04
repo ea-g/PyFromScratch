@@ -7,7 +7,7 @@ def prob_full(arr: list[str | int | float]) -> Counter:
     # 1) get the counts of each item in the list
     counts = Counter(arr)
 
-    # 2) TODO: divide each value in the counts dictionary by the total 
+    # 2) TODO: turn the counts into probabilities (or relative frequencies)
     # YOUR CODE HERE
 
     return counts
