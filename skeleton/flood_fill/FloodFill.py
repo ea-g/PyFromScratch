@@ -42,7 +42,7 @@ class FloodFillBFS:
         sz = self.input_matrix.shape
         if (coord[0] < 0) or (coord[1] < 0) or (coord[0] >= sz[0]) or (coord[1] >= sz[1]):
             return False
-        if (self.input_matrix[coord[0], coord[1]] != self.input_matrix[self.start[0], self.start[1]]).any():
+        if (self.output_matrix[coord[0], coord[1]] != self.input_matrix[self.start[0], self.start[1]]).any():
             return False
         return True
 
@@ -62,5 +62,10 @@ class FloodFillBFS:
             if debug_step:
                 if not step % debug_step:
                     show_mat(self.output_matrix, f"Matrix at step {step}")
-        
+
+start = (343, 1214)
+p = FloodFillBFS(pikm, start, (0, 255, 255))
+p.flood_fill()
+plt.matshow(p.output_matrix)
+plt.show()
 print(2)
