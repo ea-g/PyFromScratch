@@ -63,4 +63,4 @@ class FloodFillBFS:
                 if not step % debug_step:
                     show_mat(self.output_matrix, f"Matrix at step {step}")
         
-print(1)
+print(2)
