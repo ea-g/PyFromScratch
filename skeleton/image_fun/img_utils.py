@@ -11,7 +11,10 @@ def load_im_arr(fp: str | Path) -> np.ndarray:
     :param fp: file path
     :return: image as numpy array
     """
-    return np.array(Image.open(fp))
+    out = Image.open(fp)
+    if Path(fp).suffix == ".gif":
+        out = out.convert("RGB")
+    return np.array(out)
 
 
 def img_to_flt(img: str | Path | np.ndarray) -> np.ndarray:
@@ -21,13 +24,22 @@ def img_to_flt(img: str | Path | np.ndarray) -> np.ndarray:
     :return: scaled image array
     """
     # TODO: implement this using [0, 1] scaling
-    pass
+    return img / 255
 
 
-def to_greyscale(img: np.ndarray) -> np.ndarray:
+def to_greyscale(
+    img: np.ndarray, weights: np.ndarray = 1 / 3 * np.ones(3)
+) -> np.ndarray:
+    """_summary_
+
+    Args:
+        img (np.ndarray): _description_
+
+    Returns:
+        np.ndarray: _description_
     """
-    Converts an RGB image in floating point to a greyscale representation
-    :param img:
-    :return: greyscale image
-    """
-    pass
+    out = np.multiply(img, weights)
+    out = np.sum(img, axis=2)
+    return out
+
+
