@@ -30,10 +30,11 @@ def calc_rectangle(point_a: tuple[float, float], point_b: tuple[float, float]) -
     Returns:
         str: html string for a rectangle
     """
+    color = tuple([random.randint(0, 255) for i in range(3)]) # make a random RGB color
     corner = (min([point_a[0], point_b[0]]), min([point_a[1], point_b[1]]))
     h = max([point_a[1], point_b[1]]) - min([point_a[1], point_b[1]])
     w = max([point_a[0], point_b[0]]) - min([point_a[0], point_b[0]])
-    return f'<rect width="{w}" height="{h}" x="{corner[0]}" y="{corner[1]}" fill="none" stroke="red" stroke-width="4" />'
+    return f'<rect width="{w}" height="{h}" x="{corner[0]}" y="{corner[1]}" fill="none" stroke="rgb{color}" stroke-width="4" />'
 
 
 def draw_rect(e: events.MouseEventArguments):
