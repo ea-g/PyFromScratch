@@ -84,6 +84,21 @@ def switch_rect():
         key_1 = list(ii._event_listeners.keys())[0]
         del ii._event_listeners[key_1]
         
+def switch_oranges():
+    ii.on_mouse(add_oranges)
+    if len(ii._event_listeners) > 1:
+        key_1 = list(ii._event_listeners.keys())[0]
+        del ii._event_listeners[key_1]
+        
+        
+def add_oranges(e: events.MouseEventArguments):
+    global down_coord
+    if e.type=="mousedown":
+        h = 203
+        w = 200
+        down_coord = (e.image_x, e.image_y)
+        ii.content += f'<image href="https://i.postimg.cc/PqzhYSB3/orange.webp" x="{down_coord[0]-round(w*0.5)}" y="{down_coord[1]-round(h*0.5)}" height="{h}" width="{w}" />'
+        
 global circle_size
 circle_size = 50  
 def circle_smaller():
@@ -107,6 +122,7 @@ with ui.column().classes("w-full items-center"):
         ui.button('-', on_click=circle_smaller)
         zz = ui.label(f'{circle_size}')
         ui.button('+', on_click=circle_larger)
+        ui.button('Add Oranges', on_click=switch_oranges)
         ui.button('Clear', on_click=clear_image)
     ii = ui.interactive_image(
         on_mouse=draw_rect, events=["mousedown", "mouseup", "mousemove"], cross=True
