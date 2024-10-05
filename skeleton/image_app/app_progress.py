@@ -3,7 +3,8 @@ from pathlib import Path
 from starlette.formparsers import MultiPartParser
 import random
 import base64
-
+from PIL import Image
+import numpy as np
 
 MultiPartParser.max_file_size = 1024 * 1024 * 5
 # change css style
@@ -14,8 +15,13 @@ ui.add_head_html(
 # address of an image
 src = "https://picsum.photos/id/565/640/360"
 
+global rects
+rects = list()
+
 def handle_upload(e: events.UploadEventArguments) -> None:
+    global og_image
     b64_bytes = base64.b64encode(e.content.read())
+    og_image = Image.open(e.content)
     ii.set_source(f'data:{e.type};base64,{b64_bytes.decode()}')
 
 # mouse event handler--note that it's used for our interactive image
@@ -27,7 +33,7 @@ def mouse_handler(e: events.MouseEventArguments):
     ui.notify(f"{e.type} at ({e.image_x:.1f}, {e.image_y:.1f})")
 
 
-def calc_rectangle(point_a: tuple[float, float], point_b: tuple[float, float]) -> str:
+def calc_rectangle(point_a: tuple[float, float], point_b: tuple[float, float]) -> tuple:
     """Calculates the width, height, x, y from 2 points for a rectangle. x, y is the top left corner of the rectangle.
 
     Args:
@@ -41,7 +47,7 @@ def calc_rectangle(point_a: tuple[float, float], point_b: tuple[float, float]) -
     corner = (min([point_a[0], point_b[0]]), min([point_a[1], point_b[1]]))
     h = max([point_a[1], point_b[1]]) - min([point_a[1], point_b[1]])
     w = max([point_a[0], point_b[0]]) - min([point_a[0], point_b[0]])
-    return f'<rect width="{w}" height="{h}" x="{corner[0]}" y="{corner[1]}" fill="none" stroke="rgb{color}" stroke-width="4" />'
+    return (f'<rect width="{w}" height="{h}" x="{corner[0]}" y="{corner[1]}" fill="none" stroke="rgb{color}" stroke-width="4" />', dict(tc=corner, hw=(h, w)))
 
 
 def draw_rect(e: events.MouseEventArguments):
@@ -54,10 +60,13 @@ def draw_rect(e: events.MouseEventArguments):
         pass
     elif e.type == "mousemove":
         ii.content = ii.content[:content_len]
-        ii.content += calc_rectangle(down_coord, (e.image_x, e.image_y))
+        res = calc_rectangle(down_coord, (e.image_x, e.image_y))
+        ii.content += res[0]
     else: # this is mousedown!
         ii.content = ii.content[:content_len]
-        ii.content += calc_rectangle(down_coord, (e.image_x, e.image_y))
+        res = calc_rectangle(down_coord, (e.image_x, e.image_y))
+        rects.append(res[1])
+        ii.content += res[0]
         del down_coord
         del content_len
     # ui.notify(f"{e.type} at ({e.image_x:.1f}, {e.image_y:.1f})")
@@ -112,6 +121,17 @@ def circle_larger():
     circle_size += 2
     # ui.notify(f"circle size is now {circle_size}")
     zz.set_text(f"{circle_size}")
+    
+def change_image():
+    new_img = np.array(og_image)
+    for r in rects:
+        y = r['tc'][1]
+        x = r['tc'][0]
+        h = r['hw'][0]
+        w = r['hw'][1]
+        new_img[y:y+h, x:x+w, :] = 0
+    # new_img[:200, :200, :] = new_img[:200, :200, :]*0
+    ii.set_source(Image.fromarray(new_img)) 
 
 with ui.column().classes("w-full items-center"):
     ui.upload(on_upload=handle_upload).props('accept=.jpg,.jpeg,.png').classes('max-w-full')
@@ -124,6 +144,7 @@ with ui.column().classes("w-full items-center"):
         ui.button('+', on_click=circle_larger)
         ui.button('Add Oranges', on_click=switch_oranges)
         ui.button('Clear', on_click=clear_image)
+        ui.button('Test', on_click=change_image)
     ii = ui.interactive_image(
         on_mouse=draw_rect, events=["mousedown", "mouseup", "mousemove"], cross=True
     )
