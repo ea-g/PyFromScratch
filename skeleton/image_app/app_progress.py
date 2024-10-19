@@ -22,8 +22,9 @@ rects = list()
 def handle_upload(e: events.UploadEventArguments) -> None:
     global og_image
     b64_bytes = base64.b64encode(e.content.read())
-    og_image = Image.open(e.content)
-    ii.set_source(f'data:{e.type};base64,{b64_bytes.decode()}')
+    og_image = Image.open(e.content) #
+    og_image.save("og_image.jpg") # converts to compressed form!  
+    ii.set_source(f'data:{e.type};base64,{b64_bytes.decode()}') # jpg
 
 # mouse event handler--note that it's used for our interactive image
 def mouse_handler(e: events.MouseEventArguments):
@@ -78,7 +79,10 @@ def clear_image():
     global rects
     rects = list()
     ii.content = ii.content[:1]
-    ii.set_source(og_image)
+    
+    
+def revert_image():
+    ii.set_source("og_image.jpg")
     
 
 def draw_circle(e: events.MouseEventArguments):
@@ -129,7 +133,11 @@ def circle_larger():
     zz.set_text(f"{circle_size}")
     
 def change_image():
-    new_img = np.array(og_image)
+    global cur_image
+    if 'cur_image' not in globals():
+        new_img = np.array(og_image)
+    else:
+        new_img = cur_image
     for r in rects:
         y = r['tc'][1]
         x = r['tc'][0]
@@ -138,6 +146,8 @@ def change_image():
         blur_rect = np.floor(ski.filters.gaussian(new_img[y:y+h, x:x+w, :], 10, channel_axis=2)*255).astype(np.uint8) # blur, scale, round, convert
         print(blur_rect.shape)
         new_img[y:y+h, x:x+w, :] = blur_rect
+    rects.clear()
+    cur_image = new_img
     # new_img[:200, :200, :] = new_img[:200, :200, :]*0
     ii.set_source(Image.fromarray(new_img)) 
 
@@ -152,6 +162,7 @@ with ui.column().classes("w-full items-center"):
         ui.button('+', on_click=circle_larger)
         ui.button('Add Oranges', on_click=switch_oranges)
         ui.button('Clear', on_click=clear_image)
+        ui.button('Revert Image', on_click=revert_image)
         ui.button('Test', on_click=change_image)
     ii = ui.interactive_image(
         on_mouse=draw_rect, events=["mousedown", "mouseup", "mousemove"], cross=True
