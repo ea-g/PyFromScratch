@@ -5,6 +5,7 @@ import random
 import base64
 from PIL import Image
 import numpy as np
+import skimage as ski
 
 MultiPartParser.max_file_size = 1024 * 1024 * 5
 # change css style
@@ -72,7 +73,12 @@ def draw_rect(e: events.MouseEventArguments):
     # ui.notify(f"{e.type} at ({e.image_x:.1f}, {e.image_y:.1f})")
 
 def clear_image():
+    # TODO: reset the image to original
+    # clear out the rectangle list
+    global rects
+    rects = list()
     ii.content = ii.content[:1]
+    ii.set_source(og_image)
     
 
 def draw_circle(e: events.MouseEventArguments):
@@ -129,7 +135,9 @@ def change_image():
         x = r['tc'][0]
         h = r['hw'][0]
         w = r['hw'][1]
-        new_img[y:y+h, x:x+w, :] = 0
+        blur_rect = np.floor(ski.filters.gaussian(new_img[y:y+h, x:x+w, :], 10, channel_axis=2)*255).astype(np.uint8) # blur, scale, round, convert
+        print(blur_rect.shape)
+        new_img[y:y+h, x:x+w, :] = blur_rect
     # new_img[:200, :200, :] = new_img[:200, :200, :]*0
     ii.set_source(Image.fromarray(new_img)) 
 
