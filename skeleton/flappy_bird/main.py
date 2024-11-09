@@ -17,8 +17,8 @@ window = pygame.display.set_mode((WIDTH, HEIGHT))
 SCROLL_SPEED = 1 # Set scroll speed of the game
 
 class Ground(pygame.sprite.Sprite):
-    def __init__(self, x, y, img, scroll_speed):
-        super().__init__()
+    def __init__(self, x, y, img, scroll_speed, *groups):
+        super().__init__(*groups)
         # TODO: define the properties of the class, note that we're making ground a rectangle sprite with the image in it
         
         
@@ -71,5 +71,6 @@ def main():
         ground.update()
         clock.tick(60) # frame rate refresh
         pygame.display.update() # update the frame
-             
-main()
+      
+if __name__ == "__main__":       
+    main()
