@@ -3,6 +3,7 @@ class Node:
         self.data = data
         self.next = None
 
+
 # TODO: implement a circular list for the bird animation
 class CircularList:
     def __init__(self):
@@ -12,16 +13,20 @@ class CircularList:
         if self.last is not None:
             return
         new_node = Node(data)
-        self.last = None # TODO: fill this in
-        self.last.next = None # TODO: fill this in
+        self.last = new_node  # TODO: fill this in
+        self.last.next = self.last  # TODO: fill this in
 
     def enter(self, data):
         if not self.last:
             self.add_empty(data)
         else:
             new_node = Node(data)
-            new_node.next = None # TODO: point this at the previous head of the circular list
-            self.last.next = None # TODO: point this at the new head of the circular list
+            new_node.next = (
+                self.last.next
+            )  # TODO: point this at the previous head of the circular list
+            self.last.next = (
+                new_node  # TODO: point this at the new head of the circular list
+            )
 
     def append(self, data):
         if not self.last:
