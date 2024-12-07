@@ -18,7 +18,7 @@ score = 0
 # Game Constants
 SCROLL_SPEED = 1  # Set scroll speed of the game
 # game font
-font = pygame.font.Sysfont("Segoe", 26)
+font = pygame.font.SysFont("Segoe", 26)
 
 
 class Ground(pygame.sprite.Sprite):
@@ -105,7 +105,7 @@ class Bird(pygame.sprite.Sprite):
 class Pipe(pygame.sprite.Sprite):
     def __init__(
         self, x: int, y:int, img, scroll_speed:int , pipe_type:str, *groups
-    ):  # TODO: fill in the required inputs--hint: look at the ground class
+    ):  # TODO: add sound for the score (you'll need an argument!)
         super().__init__(*groups)
         self.image = img
         self.rect = self.image.get_rect()
@@ -123,10 +123,11 @@ class Pipe(pygame.sprite.Sprite):
         global score
         if (self.rect.x < (WIDTH//3 - self.image.get_width())) and (self.pipe_type == "bottom"):
             score += 1
+            # TODO: add sound effect! use pygame.mixer.Sound.play
 
 
 def load_assets(fldr: Path) -> SimpleNamespace:
-    """Loads all assets (images) from a folder and creates a simple namespace of them.
+    """Loads all assets (images/sounds) from a folder and creates a simple namespace of them.
 
     Args:
         fldr (Path): Path to the assets folder
@@ -137,7 +138,10 @@ def load_assets(fldr: Path) -> SimpleNamespace:
     # load assets into a dictionary and change to simplenamespace
     out = {}
     for i in fldr.iterdir():
-        out[i.stem] = pygame.image.load(i)
+        if i.suffix == ".png":
+            out[i.stem] = pygame.image.load(i)
+        if i.suffix in (".wav", ".mp3"):
+            out[i.stem] = pygame.mixer.Sound(i)
     return SimpleNamespace(**out)
 
 
@@ -170,6 +174,7 @@ def main():
     bird_imgs.enter(assets.bird_mid)
     bird_imgs.enter(assets.bird_up)
     bird_imgs.enter(assets.bird_mid)
+    # TODO: add start screen loop here, flip run to true after start button
 
     # use bird.add to add our Bird sprite to the group
     # adjust flap_power when initializing bird
@@ -216,7 +221,7 @@ def main():
 
         # TODO: spawn pipes here, use a time interval between 180 and 250 frames for new pipes
         
-        if pipe_timer <= 0:
+        if pipe_timer <= 0 and bird.sprite.control:
             tp_y = -assets.pipe_top.get_height() + 50
             tp_yb = -assets.pipe_top.get_height() + y_ground - 50 - assets.bird_up.get_height() - 15
             toppipe_y = randint(tp_y, tp_yb)
