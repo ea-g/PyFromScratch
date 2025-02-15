@@ -35,19 +35,37 @@ def turn(dir: direction, ort: Orientation) -> None:
         ort (Orientation): current Orientation object of the mouse
     """
     # TODO: implement turning such that given a direction to turn, you update the orientation and turn that way using the API
-    pass
+    if dir == "R":
+        ort.right()
+        API.turnRight()
+    elif dir == "L":
+        ort.left()
+        API.turnLeft()
+    else:
+        ort.left()
+        ort.left()
+        API.turnLeft()
+        API.turnLeft()
 
 
-def update_position(orientation: Orientation, prev_pos: tuple):
+def update_position(ort: Orientation, prev_pos: tuple):
     """Updates the current position of the mouse after the last movement
 
     Args:
-        orientation (Orientation): mouse's incoming orientation
+        ort (Orientation): mouse's incoming orientation
         prev_pos (tuple): mouse's previous coordinate before moving forward a step (or half step)
     """
     # TODO: update position based on orientation after turning decision and
     # assuming moving forward one full cell
-    pass
+    if ort.disp() == "N":
+        out = (prev_pos[0], prev_pos[1] + 1)
+    elif ort.disp() == "W":
+        out = (prev_pos[0] - 1, prev_pos[1])
+    elif ort.disp() == "E":
+        out = (prev_pos[0] + 1, prev_pos[1])
+    else:
+        out = (prev_pos[0], prev_pos[1] - 1)
+    return out
 
 
 def random_turn() -> direction | None:
@@ -57,7 +75,19 @@ def random_turn() -> direction | None:
         direction: direction to go in-- ['L', 'R', or 'B']. Returns None if choice is forward
     """
     # TODO: randomly choose a direction based on the options of left, right, or forward
-    pass
+    func_dir = [API.wallLeft, API.wallRight, API.wallFront]
+    dirs = ["L", "R", "F"]
+    choices = []
+    for f, d in zip(func_dir, dirs):
+        if not f():
+            choices.append(d)
+        "".join(i for i in choices)
+    if choices:
+        out = choice(choices)
+        if out != "F":
+            return out
+    else:
+        return "B"
 
 
 class FloodFillMMS:
