@@ -1,6 +1,8 @@
 from typing import Literal
 import API
 from random import choice
+import numpy as np
+from collections import deque
 
 # note: need to have path tracking and logic for returning to start for flood fill (manhattan distance)
 direction = Literal["L", "R", "B"]
@@ -28,7 +30,7 @@ class Orientation:
 
 
 def turn(dir: direction, ort: Orientation) -> None:
-    """Turns the mouse left, right, or back based on an incoming decision and updates the orientation.  
+    """Turns the mouse left, right, or back based on an incoming decision and updates the orientation.
 
     Args:
         dir (direction): L, R, or B
@@ -81,7 +83,6 @@ def random_turn() -> direction | None:
     for f, d in zip(func_dir, dirs):
         if not f():
             choices.append(d)
-        "".join(i for i in choices)
     if choices:
         out = choice(choices)
         if out != "F":
@@ -90,5 +91,43 @@ def random_turn() -> direction | None:
         return "B"
 
 
+def mmspos_to_mat(pos: tuple, size: int = 16) -> tuple[int]:
+    """Converts a micromouse coordinate to the corresponding point in a numpy array (matrix)
+
+    Args:
+        pos (tuple): micromouse position coordinate
+        size (int, Optional): size of the square grid. Defaults to 16.
+
+    Returns:
+        tuple[int]: equivalent location in a numpy array
+    """
+    x = pos[0]
+    y = size - pos[1] - 1
+    return (y, x)
+
+
 class FloodFillMMS:
-    pass
+    def __init__(self, size: int = 16):
+        self.distances = np.ones((size, size)) * -1
+        self.hwalls = np.zeros((size - 1, size))
+        self.vwalls = np.zeros((size, size - 1))
+        self.size = size
+
+    def calc_dist(self):
+        # TODO: reset distances when recalculating
+        # TODO: change the center coords to be based off of self.size
+        q = deque()
+        self.distances[7:9, 7:9] = 0
+        q.appendleft((7, 7))
+        q.appendleft((7, 8))
+        q.appendleft((8, 7))
+        q.appendleft((8, 8))
+        while q:
+            cur = q.pop()
+            up_down = [(cur[0] - 1, cur[1]), (cur[0] + 1, cur[1])]
+            left_right = [(cur[0], cur[1] - 1), (cur[0], cur[1] + 1)]
+            # TODO: check to see if each neighbor is empty  and accessible
+
+    # TODO: define a function to update walls
+    def update_walls(self, current_location: tuple) -> None:
+        pass
