@@ -127,7 +127,25 @@ class FloodFillMMS:
             up_down = [(cur[0] - 1, cur[1]), (cur[0] + 1, cur[1])]
             left_right = [(cur[0], cur[1] - 1), (cur[0], cur[1] + 1)]
             # TODO: check to see if each neighbor is empty  and accessible
-
+            # TODO: add edge case checks (are neighbors valid/in bounds)
+            # TODO: fix issue with cells blelow and to the right
+            # checking and changing up and down
+            if (not self.hwalls[cur[0]-1, cur[1]]) and (self.distances[up_down[0][0], up_down[0][1]] < 0):
+                self.distances[up_down[0][0], up_down[0][1]] = self.distances[cur[0], cur[1]] + 1
+            if not self.hwalls[cur[0]+1, cur[1]] and (self.distances[up_down[1][0], up_down[1][1]] < 0):
+                self.distances[up_down[1][0], up_down[1][1]] = self.distances[cur[0], cur[1]] + 1
+            
+            # checking and changing left and right
+            if (not self.vwalls[cur[0], cur[1]-1]) and (self.distances[left_right[0][0], left_right[0][1]] < 0):
+                self.distances[left_right[0][0], left_right[0][1]] = self.distances[cur[0], cur[1]] + 1
+            if not self.vwalls[cur[0], cur[1]+1] and (self.distances[left_right[1][0], left_right[1][1]] < 0):
+                self.distances[left_right[1][0], left_right[1][1]] = self.distances[cur[0], cur[1]] + 1
+    
+    # TODO: make a function to check if a cell is in bounds
+    def in_bounds(self, coord: tuple) -> bool:
+        pass
+    
+    
     # TODO: define a function to update walls
     def update_walls(self, current_location: tuple) -> None:
         pass
