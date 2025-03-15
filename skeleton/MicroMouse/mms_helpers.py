@@ -1,5 +1,5 @@
 from typing import Literal
-import API
+from skeleton.MicroMouse import API
 from random import choice
 import numpy as np
 from collections import deque
@@ -117,11 +117,11 @@ class FloodFillMMS:
         # TODO: reset distances when recalculating
         # TODO: change the center coords to be based off of self.size
         q = deque()
-        self.distances[7:9, 7:9] = 0
-        q.appendleft((7, 7))
-        q.appendleft((7, 8))
-        q.appendleft((8, 7))
-        q.appendleft((8, 8))
+        self.distances[self.size//2 - 1:self.size//2 + 1, self.size//2 - 1:self.size//2 + 1] = 0
+        q.appendleft((self.size//2 - 1, self.size//2 - 1))
+        q.appendleft((self.size//2 - 1, self.size//2))
+        q.appendleft((self.size//2, self.size//2 - 1))
+        q.appendleft((self.size//2, self.size//2))
         while q:
             cur = q.pop()
             up_down = [(cur[0] - 1, cur[1]), (cur[0] + 1, cur[1])]
@@ -130,22 +130,67 @@ class FloodFillMMS:
             # TODO: add edge case checks (are neighbors valid/in bounds)
             # TODO: fix issue with cells blelow and to the right
             # checking and changing up and down
-            if (not self.hwalls[cur[0]-1, cur[1]]) and (self.distances[up_down[0][0], up_down[0][1]] < 0):
-                self.distances[up_down[0][0], up_down[0][1]] = self.distances[cur[0], cur[1]] + 1
-            if not self.hwalls[cur[0]+1, cur[1]] and (self.distances[up_down[1][0], up_down[1][1]] < 0):
-                self.distances[up_down[1][0], up_down[1][1]] = self.distances[cur[0], cur[1]] + 1
+            if self.in_bounds(up_down[0]):
+                if (not self.hwalls[cur[0]-1, cur[1]]) and (self.distances[up_down[0][0], up_down[0][1]] < 0):
+                    self.distances[up_down[0][0], up_down[0][1]] = self.distances[cur[0], cur[1]] + 1
+                    q.appendleft(up_down[0])
+            if self.in_bounds(up_down[1]):
+                if not self.hwalls[cur[0], cur[1]] and (self.distances[up_down[1][0], up_down[1][1]] < 0):
+                    self.distances[up_down[1][0], up_down[1][1]] = self.distances[cur[0], cur[1]] + 1
+                    q.appendleft(up_down[1])
             
             # checking and changing left and right
-            if (not self.vwalls[cur[0], cur[1]-1]) and (self.distances[left_right[0][0], left_right[0][1]] < 0):
-                self.distances[left_right[0][0], left_right[0][1]] = self.distances[cur[0], cur[1]] + 1
-            if not self.vwalls[cur[0], cur[1]+1] and (self.distances[left_right[1][0], left_right[1][1]] < 0):
-                self.distances[left_right[1][0], left_right[1][1]] = self.distances[cur[0], cur[1]] + 1
-    
+            if self.in_bounds(left_right[0]):
+                if (not self.vwalls[cur[0], cur[1]-1]) and (self.distances[left_right[0][0], left_right[0][1]] < 0):
+                    self.distances[left_right[0][0], left_right[0][1]] = self.distances[cur[0], cur[1]] + 1
+                    q.appendleft(left_right[0])
+            if self.in_bounds(left_right[1]):
+                if not self.vwalls[cur[0], cur[1]] and (self.distances[left_right[1][0], left_right[1][1]] < 0):
+                    self.distances[left_right[1][0], left_right[1][1]] = self.distances[cur[0], cur[1]] + 1
+                    q.appendleft(left_right[1])
+        
     # TODO: make a function to check if a cell is in bounds
     def in_bounds(self, coord: tuple) -> bool:
-        pass
+        coord = np.array(coord)
+        return np.all((coord >= 0)) and np.all((coord < self.size))
     
     
     # TODO: define a function to update walls
-    def update_walls(self, current_location: tuple) -> None:
+    def update_walls(self, current_location: tuple, ort: Orientation) -> None:
+        walls = dict()
+        # change mms coordinate to matrix style
+        pos = mmspos_to_mat(current_location, self.size)
+        if ort.disp()=="N":
+            walls['left'] = {'wall': self.vwalls, 'coord': (pos[0], pos[1]-1) if self.in_bounds((pos[0], pos[1]-1)) else None} # note that we check if the wall is in bounds, TODO: double check in bounds part
+            walls['right'] = {'wall': self.vwalls, 'coord': (pos[0], pos[1]) if self.in_bounds((pos[0], pos[1])) else None}
+            walls['front'] = {'wall': self.hwalls, 'coord': (pos[0]-1, pos[1]) if self.in_bounds((pos[0]-1, pos[1])) else None}
+            walls['back'] = {'wall': self.hwalls, 'coord': (pos[0], pos[1]) if self.in_bounds((pos[0], pos[1])) else None}
+        elif ort.disp()=="S":
+            # TODO: fill in S, W, and E versions of which walls are left, right, front, and back
+            pass 
+        else:
+            pass
+        # TODO: change the value of the wall from 0 to 1 if there is a wall there
+        for w, val in zip(walls.keys(), [API.wallLeft, API.wallRight, API.wallFront, API.wallBack]):
+            if val():
+                wall = walls[w]['wall']
+                coord = walls[w]['coord']
+                
+        
+    
+    # TODO: define a function to determine where to turn based on distance matrix, current location, and orientation
+    # will need to get goal and possibly recalculate distance with floodfill
+    def prep_move(self, current_location: tuple, ort: Orientation) -> None:
+        pos = mmspos_to_mat(current_location, self.size)
+        # Steps: 
+        # 1) get the distances of neighboring cells
+        # 2) determine which is the best move (lowest) 
+        # 3) check if accessible: 
+        #   if not: recalc dist and start over
+        #   else: turn towards that cell so moving forward will put you in it
         pass
+
+# ffo = FloodFillMMS()
+# print(ffo.in_bounds((0, 3)))
+# print(ffo.in_bounds((-1, 10)))
+# print(ffo.in_bounds((20, 1)))
