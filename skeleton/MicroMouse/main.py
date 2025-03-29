@@ -19,14 +19,12 @@ def main():
     ffo.calc_dist()
     # set the mode to normal (going to center) to start
     mode = "normal"
-    d = None
     while True:
         # TODO: implement the logic of your mouse including choosing, moving, turning, keeping track of the position, and walls 
         # (not necessarily in that order...)
         # you can move forward using API.moveForward()
-        d = random_turn()
-        if d:
-            turn(d, ort)
+        ffo.update_walls(coord, ort)
+        ffo.prep_move(coord, ort, mode)
         API.moveForward()
         coord = update_position(ort, coord)
         # setting color for cells we've traversed
