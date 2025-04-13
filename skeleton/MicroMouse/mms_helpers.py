@@ -91,8 +91,9 @@ def random_turn() -> direction | None:
         return "B"
 
 
-def mmspos_to_mat(pos: tuple, size: int = 16) -> tuple[int]:
+def mmspos_to_mat(pos: tuple, size: int = 16, to_mms=False) -> tuple[int]:
     """Converts a micromouse coordinate to the corresponding point in a numpy array (matrix)
+    and back
 
     Args:
         pos (tuple): micromouse position coordinate
@@ -101,9 +102,15 @@ def mmspos_to_mat(pos: tuple, size: int = 16) -> tuple[int]:
     Returns:
         tuple[int]: equivalent location in a numpy array
     """
-    x = pos[0]
-    y = size - pos[1] - 1
-    return (y, x)
+    if not to_mms:
+        x = pos[0]
+        y = size - pos[1] - 1
+
+        return (y, x)
+    else:
+        x = pos[1]
+        y = size - pos[0] - 1
+        return (x, y)
 
 
 class FloodFillMMS:
