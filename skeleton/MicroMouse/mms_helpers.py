@@ -130,7 +130,9 @@ class FloodFillMMS:
             q.appendleft((self.size // 2, self.size // 2))
         else:
             # TODO: set the goal to 0 and add it to the queue for returning to the start
-            raise NotImplementedError()
+            g = mmspos_to_mat((0, 0))
+            self.distances[g[0], g[1]] = 0
+            q.appendleft(g)
 
         while q:
             cur = q.pop()

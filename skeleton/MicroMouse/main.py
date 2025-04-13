@@ -31,7 +31,9 @@ def main():
         API.setColor(*coord, color="Y")  # choose your color
         # TODO: stop or go back to the beginning if we've reached the goal!
         if coord[0] in (7, 8) and coord[1] in (7, 8):
-            break
+            mode = "return"
+        if coord == (0, 0):
+            mode = "normal"
 
 
 if __name__ == "__main__":
