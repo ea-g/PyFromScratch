@@ -182,6 +182,7 @@ class FloodFillMMS:
                         self.distances[cur[0], cur[1]] + 1
                     )
                     q.appendleft(left_right[1])
+        self.display_dist()
 
     # TODO: make a function to check if a cell is in bounds
     def in_bounds(
@@ -404,3 +405,12 @@ class FloodFillMMS:
                 turn("B", ort=ort)
             else:
                 turn("L", ort=ort)
+                
+    def display_dist(self):
+        # clear off old stuff
+        API.clearAllText()
+        for r in range(self.size):
+            for c in range(self.size):
+                x, y = mmspos_to_mat((r, c), self.size, True)
+                t = str(int(self.distances[r, c]))
+                API.setText(x, y, t)
