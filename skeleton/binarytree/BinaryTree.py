@@ -69,18 +69,25 @@ def levelorder(node: TreeNode | None) -> list:
     # visit each level from top to bottom, left to right
     q = deque()
     out = []
+    if node:
+        q.appendleft(node)
+    while q:
+        cus = q.pop()
+        out.append(cus.val)
+        if cus.left:
+            q.appendleft(cus.left)
+        if cus.right:
+            q.appendleft(cus.right)
+    return out
+
+
+def has_value(root: TreeNode | None, value) -> bool:
     pass
 
 
-def has_value(node: TreeNode | None, value) -> bool:
-    pass
-    
-
-def insert(node: TreeNode | None, value) -> TreeNode:
+def insert(root: TreeNode | None, value) -> TreeNode:
     pass
 
-with open("./utils/binarytree.pkl", "rb") as f:
-    make_tree = pickle.load(f)
 
 if __name__ == "__main__":
     root = TreeNode(100)
@@ -90,8 +97,6 @@ if __name__ == "__main__":
     root.left.right = TreeNode(30)
     root.right.left = TreeNode(150)
     root.right.right = TreeNode(300)
-    
-    root2 = make_tree([1, 2, 3, 4, 5, None, 8, None, None, 6, 7, 9])
 
     # uncomment to test in order here
     output_list = []
@@ -135,21 +140,35 @@ if __name__ == "__main__":
     ], f"Postorder Failed!, result: {output_list}"
     print(output_list)
 
-    # # uncomment to test levelorder here
-    # output_list = levelorder(root)
-    # assert output_list == [
-    #     100,
-    #     20,
-    #     200,
-    #     10,
-    #     30,
-    #     150,
-    #     300,
-    # ], f"Levelorder Failed!, result: {output_list}"
-    # print(output_list)
-    
+    # uncomment to test levelorder here
+    output_list = levelorder(root)
+    assert output_list == [
+        100,
+        20,
+        200,
+        10,
+        30,
+        150,
+        300,
+    ], f"Levelorder Failed!, result: {output_list}"
+    print(output_list)
+
     # # uncomment to test has_value
     # assert has_value(root, 300), 'has_value missed 300, check right traversal'
     # assert has_value(root, 10), 'has_value missed 10, check left traversal'
     # assert not has_value(None, 1), 'has value failed on empty node'
     # assert not has_value(root, 1), 'has value failed on missing value'
+
+    # # uncomment to test insert
+    # tt = TreeNode(100)
+    # tt.left = TreeNode(20)
+    # tt.left.left = TreeNode(10)
+    # tt.left.right = TreeNode(30)
+    # tt.right = TreeNode(500)
+
+    # insert(tt, 21)
+    # assert tt.left.right.left.val == 21, 'Insert placed 21 in the wrong spot'
+    # out = []
+    # inorder(tt, out)
+    # assert out == sorted(out), 'Insert placed 21 in the wrong spot'
+    # print(f"Your inorder BST:{out}")
