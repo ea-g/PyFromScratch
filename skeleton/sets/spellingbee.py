@@ -3,10 +3,9 @@ import json
 from os import PathLike
 from typing import DefaultDict, Set, FrozenSet, Literal
 import requests
-import aiohttp
-import asyncio
-
-import sys
+# import aiohttp
+# import asyncio
+# import sys
 
 
 
@@ -29,6 +28,7 @@ def validate_word(word: str, api: Literal["wiki", "dictionaryapi"] = "wiki") -> 
         raise ValueError(f'{api} given as api, must be "wiki" or "dictionaryapi"')
     try:
         response = requests.get(prefix+'some'+suffix, timeout=3)
+        # TODO do something here!
 
     except requests.exceptions.HTTPError as http_err:
         print(f'HTTP error occurred: {http_err}')  # e.g., 404, 500 errors
@@ -46,15 +46,15 @@ def validate_word(word: str, api: Literal["wiki", "dictionaryapi"] = "wiki") -> 
 
 
 def sets_to_words(words_json_fp: str | PathLike) -> DefaultDict[FrozenSet, Set]:
-    #     make a function to take a word, convert it to a set, add the set to the set dict if cardinality <= 7 and not present, add word to the values
-    #      exclude words with less than 4 letters
+    # TODO: make a function to take a word, convert it to a set, add the set to the set dict if cardinality <= 7 and not present, add word to the values
+    # exclude words with less than 4 letters
     out = defaultdict(set)
     
     # load the json
     with open(words_json_fp, "rb") as f:
         words = json.load(f)
     
-    # put your code here
+    # put your code here, start with a for loop over the words dictionary 
     pass
 
 
@@ -80,4 +80,5 @@ def sets_to_words(words_json_fp: str | PathLike) -> DefaultDict[FrozenSet, Set]:
 
 if __name__ == "__main__": 
     words_list = ['apple', 'banana', 'orange', 'nerfner']
+    vocab = sets_to_words("./words_dictionary.json")
     # asyncio.run(main(words_list))
