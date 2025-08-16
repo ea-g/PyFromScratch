@@ -8,8 +8,6 @@ import requests
 # import sys
 
 
-
-
 # TODO: make a function to validate the word using the dictionary api
 # https://api.dictionaryapi.dev/api/v2/entries/en/WORDHERE
 # or https://en.wiktionary.org/api/rest_v1/page/definition/WORD HERE?redirect=false
@@ -27,34 +25,49 @@ def validate_word(word: str, api: Literal["wiki", "dictionaryapi"] = "wiki") -> 
     else:
         raise ValueError(f'{api} given as api, must be "wiki" or "dictionaryapi"')
     try:
-        response = requests.get(prefix+'some'+suffix, timeout=3)
+        response = requests.get(prefix + word + suffix, timeout=3)
         # TODO do something here!
 
     except requests.exceptions.HTTPError as http_err:
-        print(f'HTTP error occurred: {http_err}')  # e.g., 404, 500 errors
+        print(f"HTTP error occurred: {http_err}")  # e.g., 404, 500 errors
 
     except requests.exceptions.ConnectionError as conn_err:
-        print(f'Connection error occurred: {conn_err}')  # DNS failure, refused connection, etc.
+        print(
+            f"Connection error occurred: {conn_err}"
+        )  # DNS failure, refused connection, etc.
 
     except requests.exceptions.Timeout as timeout_err:
-        print(f'Request timed out: {timeout_err}')  # Server took too long to respond
+        print(f"Request timed out: {timeout_err}")  # Server took too long to respond
 
     except requests.exceptions.RequestException as req_err:
         # Base exception for all other request-related errors
-        print(f'An error occurred: {req_err}')
-        
+        print(f"An error occurred: {req_err}")
 
 
 def sets_to_words(words_json_fp: str | PathLike) -> DefaultDict[FrozenSet, Set]:
     # TODO: make a function to take a word, convert it to a set, add the set to the set dict if cardinality <= 7 and not present, add word to the values
     # exclude words with less than 4 letters
     out = defaultdict(set)
-    
+
     # load the json
     with open(words_json_fp, "rb") as f:
         words = json.load(f)
-    
-    # put your code here, start with a for loop over the words dictionary 
+
+    # put your code here, start with a for loop over the words dictionary
+    for w in words:
+        if len(w) >= 4:
+            fz = frozenset(w)
+            if len(fz) <= 7:
+                out[fz].add(w)
+    return out
+
+
+def get_answers(letters: str, key_letter: str, vocab: DefaultDict[FrozenSet, Set]):
+    # get all the subsets that have:
+    # 1. the key letter
+    # 2. a vowel or y? (to confirm)
+    # 3. have cardinality >= 2
+    start = set(letters)
     pass
 
 
@@ -78,7 +91,9 @@ def sets_to_words(words_json_fp: str | PathLike) -> DefaultDict[FrozenSet, Set]:
 #         z = await asyncio.gather(*tasks)
 #         print(z)
 
-if __name__ == "__main__": 
-    words_list = ['apple', 'banana', 'orange', 'nerfner']
+if __name__ == "__main__":
+    words_list = ["apple", "banana", "orange", "nerfner"]
+    # vocab = sets_to_words("./skeleton/sets/words_dictionary.json")
     vocab = sets_to_words("./words_dictionary.json")
+    print(vocab[frozenset("taxability")])
     # asyncio.run(main(words_list))
