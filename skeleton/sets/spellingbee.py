@@ -3,6 +3,7 @@ import json
 from os import PathLike
 from typing import DefaultDict, Set, FrozenSet, Literal
 import requests
+from itertools import combinations
 # import aiohttp
 # import asyncio
 # import sys
@@ -19,14 +20,17 @@ def validate_word(word: str, api: Literal["wiki", "dictionaryapi"] = "wiki") -> 
     if api == "wiki":
         prefix = "https://en.wiktionary.org/api/rest_v1/page/definition/"
         suffix = "?redirect=false"
+        raise NotImplementedError("Wikitionary not implemented! Use dictionaryapi")
     elif api == "dictionaryapi":
         prefix = "https://api.dictionaryapi.dev/api/v2/entries/en/"
         suffix = ""
     else:
         raise ValueError(f'{api} given as api, must be "wiki" or "dictionaryapi"')
     try:
-        response = requests.get(prefix + word + suffix, timeout=3)
+        response = requests.get(prefix + word + suffix, timeout=1)
         # TODO do something here!
+        return response.status_code == 200
+            
 
     except requests.exceptions.HTTPError as http_err:
         print(f"HTTP error occurred: {http_err}")  # e.g., 404, 500 errors
@@ -65,10 +69,27 @@ def sets_to_words(words_json_fp: str | PathLike) -> DefaultDict[FrozenSet, Set]:
 def get_answers(letters: str, key_letter: str, vocab: DefaultDict[FrozenSet, Set]):
     # get all the subsets that have:
     # 1. the key letter
-    # 2. a vowel or y? (to confirm)
-    # 3. have cardinality >= 2
+    # 2. have cardinality >= 2
     start = set(letters)
-    pass
+    possible_sets = list()
+    # get all possible combinations of letters in the 
+    for i in range(2, len(letters)+1):
+        possible_sets += list(combinations(start, i))
+    # convert the tuples to frozensets
+    for i in range(len(possible_sets)):
+        possible_sets[i] = frozenset(possible_sets[i])
+    sets_to_check = list()
+    # checking if the key letter is present in the possible sets
+    for s in possible_sets:
+        if key_letter in s:
+            # if key letter is there, keep the set (add to sets_to_check)
+            sets_to_check.append(s)
+    answers = set()
+    for s in sets_to_check:
+        answers = answers | vocab[s]
+        
+    
+    return answers
 
 
 # running async for many words at once
@@ -96,4 +117,8 @@ if __name__ == "__main__":
     # vocab = sets_to_words("./skeleton/sets/words_dictionary.json")
     vocab = sets_to_words("./words_dictionary.json")
     print(vocab[frozenset("taxability")])
+    out = get_answers("endivgh", "v", vocab)
+    print(f"apple is valid: {validate_word('apple', api='dictionaryapi')}")
+    print(f"aewsfawef is valid: {validate_word('aewsfawef', api='dictionaryapi')}")
+    
     # asyncio.run(main(words_list))
