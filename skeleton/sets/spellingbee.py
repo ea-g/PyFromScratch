@@ -4,6 +4,7 @@ from os import PathLike
 from typing import DefaultDict, Set, FrozenSet, Literal
 import requests
 from itertools import combinations
+import fire
 # import aiohttp
 # import asyncio
 # import sys
@@ -27,7 +28,7 @@ def validate_word(word: str, api: Literal["wiki", "dictionaryapi"] = "wiki") -> 
     else:
         raise ValueError(f'{api} given as api, must be "wiki" or "dictionaryapi"')
     try:
-        response = requests.get(prefix + word + suffix, timeout=1)
+        response = requests.get(prefix + word + suffix, timeout=3)
         # TODO do something here!
         return response.status_code == 200
             
@@ -87,10 +88,38 @@ def get_answers(letters: str, key_letter: str, vocab: DefaultDict[FrozenSet, Set
     answers = set()
     for s in sets_to_check:
         answers = answers | vocab[s]
-        
-    
     return answers
 
+def order_answers(answers: list):
+    # order so that words of the same starting letter are together and ordered by descending length (longest -> shortest)
+    return sorted(answers, key = lambda x: (x, -len(x))) # TODO: fix me!
+
+def pretty_print(answers: list):
+    # print words of same length on same line with headers for each letter section
+    
+    # initialize
+    key_letter = answers[0][0]
+    header = f"=====================\nAnswers for letter {key_letter}:\n====================="
+    word_len = len(answers[0])
+    ln = ""
+    print(header)
+    for w in answers:
+        if w[0] != key_letter:
+            # TODO: fill me in, what to do when the first letter changes?
+            header = f"\n=====================\nAnswers for letter {key_letter}:\n====================="
+            # print new header
+            print(header)
+        if word_len != len(w):
+            # TODO: fill me in, what to do when the word length changes?
+            pass
+        # add 
+        ln = ln + w + ", "
+        
+            
+def main(letters: str, key: str):
+    # TODO: put it all together in the right order
+    # optionally, make the panagrams (words that use all letters) print first 
+    pass
 
 # running async for many words at once
 # if sys.platform == 'win32':
@@ -117,8 +146,10 @@ if __name__ == "__main__":
     # vocab = sets_to_words("./skeleton/sets/words_dictionary.json")
     vocab = sets_to_words("./words_dictionary.json")
     print(vocab[frozenset("taxability")])
-    out = get_answers("endivgh", "v", vocab)
+    out = order_answers(get_answers("endivgh", "v", vocab))
     print(f"apple is valid: {validate_word('apple', api='dictionaryapi')}")
     print(f"aewsfawef is valid: {validate_word('aewsfawef', api='dictionaryapi')}")
-    
     # asyncio.run(main(words_list))
+    
+    # when ready remove parts above and uncomment line below
+    # fire.Fire(main)
