@@ -16,13 +16,13 @@ timer = pygame.time.Clock()
 wall_thickness = 10
 # TODO: fill me in
 scale = 2  # 2 pixels per meter
-min_vel = 0.08  # may need to adjust 
+min_vel = 0.08  # may need to adjust
 
 # TODO: fill me in
 rho = 1.22  # density of the fluid body
-C = .47  # drag coefficient, can depend on Reynolds number, roughness of surface, etc.
+C = 0.1  # drag coefficient, can depend on Reynolds number, roughness of surface, etc.
 
-gravity = np.double(9.8 / fps / scale) 
+gravity = np.double(9.8 / fps / scale)
 
 
 class Particle:
@@ -39,7 +39,10 @@ class Particle:
         self.id = id
         self.retention = retention
         self.circle = None
-        self.rca = np.multiply(.5 * rho * C * np.pi, np.square(self.radius))  # TODO: Fill me in with most of the drag equation using numpy
+        self.rca = np.multiply(
+            0.5 * rho * C * np.pi, np.square(self.radius)
+        )  # TODO: Fill me in with most of the drag equation using numpy
+        self.selected = False
 
     def draw(self):
         # TODO: change the values to use the
@@ -58,34 +61,38 @@ class Particle:
     def apply_drag(self):
         # TODO: fill me in with numpy, remember to scale for 60 fps and update velocity
         vels = np.array([self.x_vel, self.y_vel])
-        
-        a = np.multiply(np.multiply(self.rca, np.square(vels)), 1/self.mass)
+
+        a = np.multiply(np.multiply(self.rca, np.square(vels)), 1 / self.mass)
         # scale a for fps and pix-meter scale
-        a = np.multiply(a, 1/fps * 1/scale)
-        # make a in the opposite direction of motion 
-        a = np.multiply(-1*np.sign(vels), a)
-         
+        a = np.multiply(a, 1 / fps * 1 / scale)
+        # make a in the opposite direction of motion
+        a = np.multiply(-1 * np.sign(vels), a)
+
         # update the velocities with a
         out = np.add(vels, a)
-        
+
         # TODO: fill in clipping and discrete time correction
         # PROBLEM OF DISCRETE vs. CONTINUOUS TIME
-        # in reality, the acceleration from drag should never exceed the current velocity. However, we are applying it over discrete time steps rather than infintesimally small changes in time (where we could have small updates). 
+        # in reality, the acceleration from drag should never exceed the current velocity. However, we are applying it over discrete time steps rather than infintesimally small changes in time (where we could have small updates).
         # if the acceleration from the force of drag exceeds the velocity of the direction of motion in a single frame update, then we stop (remember drag works opposite the direction of motion but if motion is changing very rapidly then our timestep won't capture it correctly)
         # TODO: explain about terminal velocity (ignoring boyouancy). What is v when drag force = grav force? what happens when we start with y_vel > terminal? should slowly slow down to terminal vel.
-        # out[np.abs(vels) <= np.abs(a)] = 0 
+        out[np.abs(vels) <= np.abs(a)] = 0
 
         # check for min vel and clip (only needed in x direction)
         out[0] = 0 if (np.abs(out[0]) <= min_vel) else out[0]
-        
+
         self.x_vel = out[0]
         self.y_vel = out[1]
 
-    def update_position(self):
+    def update_position(self, pos:tuple = None):
         # TODO:
         # adjust x and y pos based on velocity
-        self.x_pos = np.add(self.x_vel, self.x_pos)
-        self.y_pos = np.add(self.y_vel, self.y_pos)
+        if self.selected:
+            self.x_pos = pos[0]
+            self.y_pos = pos[1]
+        else:
+            self.x_pos = np.add(self.x_vel, self.x_pos)
+            self.y_pos = np.add(self.y_vel, self.y_pos)
 
     def wall_bounce(self):
         # check bottom
@@ -115,6 +122,11 @@ class Particle:
             if abs(self.x_vel) <= min_vel:
                 self.x_vel = 0
 
+    def check_clicked(self, pos: tuple[int]):
+        diff = np.array([self.x_pos, self.y_pos]) - np.array(pos)
+        c = np.sqrt(np.sum(np.square(diff)))
+        self.selected = c <= self.radius
+
 
 def draw_walls():
     left = pygame.draw.line(screen, "white", (0, 0), (0, HEIGHT), wall_thickness)
@@ -140,7 +152,7 @@ for i in range(1, 10):
             random.randint(40, HEIGHT - 40),
             random.randint(6, 24),
             (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)),
-            random.randint(5, 500),
+            random.randint(500, 5000),
             random.randint(-100, 100),
             random.randint(-100, 100),
             i,
@@ -151,6 +163,7 @@ for i in range(1, 10):
 run = True
 show_info = True
 time_check = 0
+mouse_down = False
 while run:
     # run at speed
     timer.tick(fps)
@@ -161,21 +174,35 @@ while run:
     walls = draw_walls()
     for p in ps:
         # call funcs here
-        p.apply_drag() # note, apply drag prior to gravity to reach terminal velocity correctly
-        p.apply_gravity()        
+        p.apply_drag()  # note, apply drag prior to gravity to reach terminal velocity correctly
+        p.apply_gravity()
         p.wall_bounce()
-        p.update_position()
+        # few notes: we were checking if clicked every frame, makes it difficult to stay within bounds--now only unselect on mousebottonup 
+        # the nonetype error is because we weren't changing p.selected through p.check_clicked() after the mouse went up. So p.selected stayed true but we didn't pass in a coordinate to update_postion(), hence the none error
+        if mouse_down:
+            p.update_position(pygame.mouse.get_pos())
+        else:
+            p.selected = False
+            p.update_position()
         p.draw()
-        # TODO: show that the blue ball reaches terminal velocity (minus the drag)
-        if p.id==0 and (pygame.time.get_ticks()//500 > time_check) and show_info:
-            time_check += 1
-            print(p.y_vel)
+        # show that the blue ball reaches terminal velocity (minus the drag)
+        # if p.id==0 and (pygame.time.get_ticks()//500 > time_check) and show_info:
+        #     time_check += 1
+        #     print(p.y_vel)
 
     # check for events like mouse or keyboard
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             # exits the game loop
             run = False
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_down = True
+            for p in ps:
+                p.check_clicked(pygame.mouse.get_pos())
+        elif event.type == pygame.MOUSEBUTTONUP:
+            mouse_down = False
+    # if mouse_down:
+    #     print(pygame.mouse.get_pos())
 
     # draws everything on the screen
     pygame.display.flip()
