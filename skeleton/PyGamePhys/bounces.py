@@ -1,6 +1,7 @@
 import pygame
 import random
 import numpy as np
+from collections import deque
 
 pygame.init()
 
@@ -21,6 +22,7 @@ min_vel = 0.08  # may need to adjust
 # TODO: fill me in
 rho = 1.22  # density of the fluid body
 C = 0.1  # drag coefficient, can depend on Reynolds number, roughness of surface, etc.
+QUEUE_LEN = 30
 
 gravity = np.double(9.8 / fps / scale)
 
@@ -84,7 +86,7 @@ class Particle:
         self.x_vel = out[0]
         self.y_vel = out[1]
 
-    def update_position(self, pos:tuple = None):
+    def update_position(self, pos: tuple = None):
         # TODO:
         # adjust x and y pos based on velocity
         if self.selected:
@@ -128,6 +130,17 @@ class Particle:
         self.selected = c <= self.radius
 
 
+# TODO: quick explanation of this one
+def check_collide(p1: Particle, p2: Particle) -> bool:
+    pos1 = np.array([p1.x_pos, p1.y_pos])
+    pos2 = np.array([p2.x_pos, p2.y_pos])
+    # compares the squared dist. vs sum of squared radii
+    if np.sum(np.square(pos1 - pos2)) <= np.sum(np.square([p1.radius, p2.radius])):
+        return True
+    else:
+        return False
+
+
 def draw_walls():
     left = pygame.draw.line(screen, "white", (0, 0), (0, HEIGHT), wall_thickness)
     # TODO: Fill these in
@@ -164,6 +177,7 @@ run = True
 show_info = True
 time_check = 0
 mouse_down = False
+mouse_positions = deque()
 while run:
     # run at speed
     timer.tick(fps)
@@ -177,19 +191,26 @@ while run:
         p.apply_drag()  # note, apply drag prior to gravity to reach terminal velocity correctly
         p.apply_gravity()
         p.wall_bounce()
-        # few notes: we were checking if clicked every frame, makes it difficult to stay within bounds--now only unselect on mousebottonup 
+        # few notes: we were checking if clicked every frame, makes it difficult to stay within bounds--now only unselect on mousebottonup
         # the nonetype error is because we weren't changing p.selected through p.check_clicked() after the mouse went up. So p.selected stayed true but we didn't pass in a coordinate to update_postion(), hence the none error
         if mouse_down:
+            if len(mouse_positions) >= QUEUE_LEN:
+                mouse_positions.pop()
+            mouse_positions.appendleft(pygame.mouse.get_pos())
             p.update_position(pygame.mouse.get_pos())
         else:
             p.selected = False
             p.update_position()
+        # TODO: account for collisions with a clicked object (like hitting a wall, vel is reflected)
+        for a in ps[p.id + 1 :]:
+            if check_collide(p, a):
+                # TODO: apply collisions here
+                print("touched")
         p.draw()
         # show that the blue ball reaches terminal velocity (minus the drag)
         # if p.id==0 and (pygame.time.get_ticks()//500 > time_check) and show_info:
         #     time_check += 1
         #     print(p.y_vel)
-
     # check for events like mouse or keyboard
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -200,11 +221,23 @@ while run:
             for p in ps:
                 p.check_clicked(pygame.mouse.get_pos())
         elif event.type == pygame.MOUSEBUTTONUP:
+            pos_start = np.array(mouse_positions[-1])
+            pos_end = np.array(mouse_positions[0])
+            avg_vel = (
+                (pos_end - pos_start) / (len(mouse_positions) / fps)
+            )  # time is the number of frames, TODO: note that pos_start and end here are flipped **so reverse them
+            print(avg_vel)
+            for p in ps:
+                if p.selected:
+                    p.x_vel = avg_vel[0]
+                    p.y_vel = avg_vel[1]
+            mouse_positions.clear()
             mouse_down = False
     # if mouse_down:
     #     print(pygame.mouse.get_pos())
 
     # draws everything on the screen
     pygame.display.flip()
+
 
 pygame.quit()
