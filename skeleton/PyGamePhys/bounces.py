@@ -45,6 +45,7 @@ class Particle:
             0.5 * rho * C * np.pi, np.square(self.radius)
         )  # TODO: Fill me in with most of the drag equation using numpy
         self.selected = False
+        self.last_collision = 0
 
     def draw(self):
         # TODO: change the values to use the
@@ -134,11 +135,51 @@ class Particle:
 def check_collide(p1: Particle, p2: Particle) -> bool:
     pos1 = np.array([p1.x_pos, p1.y_pos])
     pos2 = np.array([p2.x_pos, p2.y_pos])
-    # compares the squared dist. vs sum of squared radii
-    if np.sum(np.square(pos1 - pos2)) <= np.sum(np.square([p1.radius, p2.radius])):
+    # compares the squared dist. vs squared sum of radii TODO: fix here switching sq and sum of stud code
+    if np.sum(np.square(pos1 - pos2)) <= np.square(np.sum([p1.radius, p2.radius])):
         return True
     else:
         return False
+    
+def collide(p1: Particle, p2: Particle) -> None:
+    # TODO implement collisions 
+    # only collide if time since last collision >= 1/6 of sec (10 frames)
+    # TODO: reset positions so no overlap -- need to get direction of movement for this and adjust
+    if (pygame.time.get_ticks() - p1.last_collision) >= 100 or (pygame.time.get_ticks() - p2.last_collision) >= 100:
+        # reset positions so no overlap, maintain the angle,
+        # 1) find the new difference in x/y based on the desired diff in positions (sum radii + 1)
+        # c_fin = (p1.radius + p2.radius + 1)
+        # p1_pos = np.array([p1.x_pos, p1.y_pos])
+        # p2_pos = np.array([p2.x_pos, p2.y_pos])
+        # diff = p1_pos - p2_pos 
+        # c_init = np.sum(np.square(diff))
+        # new_diff = c_fin * (diff/c_init)
+        # # 2) adjust left most left, right most right, top most up, bottom most down...would be better if going in direction of movement 
+        # adj = np.abs((new_diff - diff)/2)
+        # if p1.y_pos < p2.y_pos:
+        #     p1.y_pos = p1.y_pos - adj[1]
+        #     p2.y_pos = p2.y_pos + adj[1]
+        # else:
+        #     p1.y_pos = p1.y_pos + adj[1]
+        #     p2.y_pos = p2.y_pos - adj[1]
+        # if p1.x_pos < p2.x_pos:
+        #     p1.x_pos = p1.x_pos - adj[0]
+        #     p2.x_pos = p2.x_pos + adj[0]
+        # else:
+        #     p1.x_pos = p1.x_pos + adj[0]
+        #     p2.x_pos = p2.x_pos - adj[0]
+        p1_init = np.array([p1.x_vel, p1.y_vel])
+        p2_init = np.array([p2.x_vel, p2.y_vel])
+        p1_fin = ((2*p2.mass*p2_init) + p1_init*(p1.mass - p2.mass))/(p1.mass + p2.mass)
+        p1.x_vel = p1_fin[0]
+        p1.y_vel = p1_fin[1]
+        
+        # p1.y_vel = ((2*p2.mass*p2.y_vel) + p1.y_vel*(p1.mass - p2.mass))/(p1.mass + p2.mass)
+        p2_fin = ((2*p1.mass*p1_init) + p2_init*(p2.mass - p1.mass)) / (p1.mass + p2.mass)
+        p2.x_vel = p2_fin[0]
+        p2.y_vel = p2_fin[1]
+        p1.last_collision = pygame.time.get_ticks()
+        p2.last_collision = pygame.time.get_ticks()
 
 
 def draw_walls():
@@ -205,7 +246,9 @@ while run:
         for a in ps[p.id + 1 :]:
             if check_collide(p, a):
                 # TODO: apply collisions here
-                print("touched")
+                # TODO: implement a period of no collision after collide for two particles... 10 frames/updates?
+                collide(p, a)
+                # print("touched")
         p.draw()
         # show that the blue ball reaches terminal velocity (minus the drag)
         # if p.id==0 and (pygame.time.get_ticks()//500 > time_check) and show_info:
